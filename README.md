@@ -1,2 +1,1 @@
-# notes
-Programmer Notes
+# Software Developer Notes
