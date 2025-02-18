@@ -7,23 +7,11 @@
   - [Folder Structure](#folder-structure)
   - [Naming Convention](#naming-convention)
 - [Components](#components)
-  - [Class Component Lifecycle](#class-component-lifecycle)
-  - [Function Component Lifecycle](#function-component-lifecycle)
+  - [Class Component](#class-component)
+  - [Function Component](#function-component)
   - [Props](#props)
   - [Context](#context)
   - [Conditional Rendering](#conditional-rendering)
-- [Redux](#redux)
-  - [Concept](#concept)
-  - [Plain JavaScript Example](#plain-javascript-example)
-- [Redux (React)](#redux-react)
-  - [Using the latest `configureStore`](#using-the-latest-configurestore)
-  - [React Example Using `createStore`](#react-example-using-createstore)
-    - [Development](#development)
-    - [Debug / Trace](#debug--trace)
-  - [Practice](#practice)
-  - [useSelector](#useselector)
-    - [Use Memoizing Selectors](#use-memoizing-selectors)
-    - [Without Re-render](#without-re-render)
 - [Hooks](#hooks)
   - [useState](#usestate)
     - [State Batch Update](#state-batch-update)
@@ -32,26 +20,17 @@
   - [useMemo](#usememo)
   - [useCallback](#usecallback)
   - [useEffect](#useeffect)
-    - [Using setState inside useEffect](#using-setstate-inside-useeffect)
-    - [Return a cleanup function](#return-a-cleanup-function)
-    - [Using async inside useEffect](#using-async-inside-useeffect)
   - [useLayoutEffect](#uselayouteffect)
   - [Custom Hook](#custom-hook)
 - [UI](#ui)
-  - [General](#general)
-  - [Style](#style)
-  - [CSS](#css)
+  - [Apply CSS Style](#apply-css-style)
+  - [Where to Store Images](#where-to-store-images)
+  - [SVG Images](#svg-images)
 - [Form](#form)
 - [Router](#router)
 - [Translation](#translation)
 - [How to](#how-to)
   - [Add environment variables](#add-environment-variables)
-  - [Add image](#add-image)
-  - [Add select dropdown list](#add-select-dropdown-list)
-  - [Add toast](#add-toast)
-  - [Add style](#add-style)
-  - [Render list](#render-list)
-  - [Input Validation Message](#input-validation-message)
   - [Inactive timeout](#inactive-timeout)
 - [UI Library](#ui-library)
   - [Prime React](#prime-react)
@@ -228,18 +207,24 @@ Component and file name - Name your files using PascalCase, matching the compone
 
 # Components
 
-- React apps are made out of components. A component is a piece of the UI (user interface) that has its own logic and appearance. It can be as small as a button, or as large as an entire page.
-- **User-Defined Components Must Be Capitalized**, otherwise it will be refered to an HTML tag. (e.g. `<Select>` vs `<select>`)
-  - `const Select = () => {...}`
+React apps are made out of components. A component is a reusable, independent piece of UI that has its own logic and appearance. It can be as small as a button, or as large as an entire page.
 
-## Class Component Lifecycle
+There are two main types of components in React:
 
-Each class component in React has a lifecycle which you can monitor and manipulate during its three main phases.
+- Class Components
+- Functional Components
 
-The three phases are: 
-- Mounting - that is inserting elements into the DOM.
-- Updating - involves methods for updating components in the DOM.
-- Unmounting - that is removing a component from the DOM.
+A React component must be Capitalized (e.g. `<Img />`), otherwise it will be refered to an HTML tag (e.g. `<img />`).
+
+## Class Component
+
+Class components are ES6 classes that extend `React.Component`. They use a `render()` method to return JSX and have a built-in `state` object.
+
+Each class component has a lifecycle which you can monitor and manipulate during its three main phases:
+
+- **Mounting** - that is inserting elements into the DOM.
+- **Updating** - involves methods for updating components in the DOM.
+- **Unmounting** - that is removing a component from the DOM.
 
 **Mounting**
 
@@ -271,7 +256,21 @@ React has only one built-in method that gets called when a component is unmounte
 
 1. `componentWillUnmount()`
 
-## Function Component Lifecycle
+## Function Component
+
+Function components are just JavaScript functions that return JSX. They can accept `props` (input data) and use hooks (e.g., `useState`, `useEffect`) for managing state and side effects.
+
+```tsx
+const HomePage: React.FC = () => {
+  return (
+    <div>
+      <Image src={pic} alt="Picture of the author" />
+    </div>
+  );
+};
+
+export default HomePage;
+```
 
 When React renders a function component, the process is similar to rendering a class component.
 
@@ -288,8 +287,6 @@ When React renders a function component, the process is similar to rendering a c
 **Unmounting**
 
 1. Cleanup: If necessary, any cleanup logic can be performed manually within the function component. Then, the component is removed from the DOM.
-
-It's important to note that function components don't have lifecycle methods like class components do. However, you can achieve similar functionality using React Hooks, such as `useState`, `useEffect`, and others. Hooks allow you to manage state, perform side effects, and control the component's behavior in a function component.
 
 ## Props
 
@@ -457,614 +454,6 @@ If you expect only true condition would render something, use `&&` operator or `
 
 - Note that if using `&&` operator, the condition must be a boolean, avoid using number, string, etc. as a falsy condition.
 
-# Redux
-
-Background:
-
-Normally when you want to pass data from one component to another component, you can use *props* or Context. However, *props* and Conext are mainly used in passing data **from parent to child components**. For the same level components (e.g. `Search` and `MovieList`), they need to make use of a global variable store to exchange data (otherwise they need to use the *props* of the top-level component `App`).
-
-![](../image/Snipaste_2022-11-25_18-18-49.png)
-
-Use cases:
-
-- You have larger amounts of application state that are needed in many places in the app.
-- The app state is updated frequently over time.
-- The logic to update that state may be complex.
-- The app has a medium or large-sized codebase, and might be worked on by many people.
-- You want to be able to understand when, why, and how the state in your application has updated, and visualize the changes to your state over time.
-- You need more powerful capabilities for managing side effects, persistence, and data serialization.
-
-## Concept
-
-Redux lets the components read data from a Redux store, and dispatch actions to the store to update state.
-
-![](../image/react-redux-architecture.png)
-
-- Store - contain globalized `state`
-- Reducer - modify the `state` based on the Action, one reducer = one state
-- Action - specify what you want to do to the `state`
-- Dispatch - send the Action to the Reducer
-
-## Plain JavaScript Example
-
-**This is for concept only!!!**
-```js
-import { createStore } from 'redux'
-
-/**
- * This is a reducer - a function that takes a current state value and an
- * action object describing "what happened", and returns a new state value.
- * A reducer's function signature is: (state, action) => newState
- *
- * The Redux state should contain only plain JS objects, arrays, and primitives.
- * The root state value is usually an object. It's important that you should
- * not mutate the state object, but return a new object if the state changes.
- * The state parameter is mainly for initialization of the state.
- */
-function counterReducer(state = { value: 0 }, action) {
-  switch (action.type) {
-    case 'increment':
-      return { value: state.value + 1 }
-    case 'incrementByAmount':
-      return { value: state.value + action.payload}
-    default:
-      return state
-  }
-}
-
-// Create a Redux store holding the state of your app.
-// Its API is { subscribe, dispatch, getState }.
-let store = createStore(counterReducer)
-
-// Create some functions to return an action object.
-// Normally each action object contain type and payload, which is used by 
-// reducer to decide the new state value.
-function increment() {
-  return {
-    type: 'increment'
-  }
-}
-
-function incrementByAmount(amount) {
-  return {
-    type: 'incrementByAmount',
-    payload: amount
-  }
-}
-
-// You can use subscribe() to update the UI in response to state changes.
-// Normally you'd use a view binding library (e.g. React Redux) rather than subscribe() directly.
-// There may be additional use cases where it's helpful to subscribe as well.
-store.subscribe(() => console.log(store.getState()))
-
-// The only way to mutate the internal state is to dispatch an action.
-// The actions can be serialized, logged or stored and later replayed.
-store.dispatch(increment())           // {value: 1}
-store.dispatch(incrementByAmount(5))  // {value: 6}
-```
-
-# Redux (React)
-
-## Using the latest `configureStore`
-
-- ref: https://react-redux.js.org/tutorials/quick-start
-- typescript ref: https://react-redux.js.org/tutorials/typescript-quick-start
-- persist store (will persist after refresh) tutorial: https://blog.logrocket.com/persist-state-redux-persist-redux-toolkit-react/
-
-```
-src
-├── App.tsx
-├── hooks.ts
-├── index.tsx
-└── redux
-     ├── userSlice.ts
-     └── store.ts
-```
-
-Below is `hooks.ts`
-```ts
-import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
-import type { RootState, AppDispatch } from "./redux/store";
-
-// Use throughout your app instead of plain `useDispatch` and `useSelector`
-export const useAppDispatch: () => AppDispatch = useDispatch;
-export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
-```
-
-Below is `index.tsx`
-```jsx
-import ...
-import { Provider } from "react-redux";
-import store from "./redux/store";
-
-...
-
-root.render(
-  <React.StrictMode>
-    <Provider store={store}>
-      <App />
-    </Provider>
-  </React.StrictMode>
-);
-```
-
-Below is `userSlice.ts` (Each slice = a global state in the store)
-```ts
-import { PayloadAction, createSlice } from "@reduxjs/toolkit";
-
-interface UserState {
-  login: string;
-  password: string;
-  level: number;
-}
-
-const initialState: UserState = {
-  login: "",
-  password: "",
-  level: 0,
-};
-
-// Here are 4 types of parameter in reducer, either return object or mutate state
-export const userSlice = createSlice({
-  name: "user",
-  initialState: initialState,
-  reducers: {
-    setUserLoginPassword: (state, action: PayloadAction<Partial<UserState>>) => {
-      return { ...state, ...action.payload };
-    },
-    resetUser: (state) => {
-      return { ...initialState };
-    },
-    updateUser: (state, action: PayloadAction<UserState>) => {
-      return { ...action.payload };
-    },
-    updateUserLevel: (state, action: PayloadAction<number>) => {
-      state.level = action.payload;
-    },
-  },
-});
-
-export const { setUserLoginPassword, resetUser, updateUser, updateUserLevel } = userSlice.actions;
-
-export default userSlice.reducer;
-```
-
-Below is `store.ts`
-```ts
-import { combineReducers, configureStore } from "@reduxjs/toolkit";
-import userReducer from "./userSlice";
-import { persistReducer, persistStore } from "redux-persist";
-import storage from "redux-persist/es/storage";
-import thunk from "redux-thunk";
-
-const persistConfig = {
-  key: "root",
-  storage,  // will store in the local storage
-};
-const reducers = combineReducers({
-  user: userReducer,
-});
-const persistedReducer = persistReducer(persistConfig, reducers);
-
-const store = configureStore({
-  reducer: persistedReducer,
-  middleware: [thunk],
-});
-
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
-export const persistor = persistStore(store);
-export default store;
-```
-
-Below is `App.tsx` (really use the redux state)
-```jsx
-import { useAppDispatch, useAppSelector } from "../hooks";
-import {
-  resetUser,
-  setUserLoginPassword,
-  updateUser,
-} from "../redux/userSlice";
-
-const App = () => {
-  const user = useAppSelector((state) => state.user);
-  const dispatch = useAppDispatch();
-
-  const setUser = () => {
-    dispatch(
-      setUserLoginPassword({
-        login: "user001",
-        password: "abc123",
-      })
-    );
-  }
-
-  const reset = () => {
-    dispatch(resetUser());
-  };
-
-  const update = () => {
-    dispatch(
-      updateUserLevel({
-        level: 1,
-      })
-    );
-  };
-
-  ...
-}
-```
-
-## React Example Using `createStore`
-
-### Development
-
-This exmaple is for the login flow.
-
-```
-src
-├── App.tsx
-└── state                     // Or "redux"
-    ├── user
-    │   ├── user.action.tsx
-    │   ├── user.actionCreator.tsx
-    │   ├── user.reducer.tsx
-    │   └── user.types.tsx
-    ├── root-reducer.tsx
-    └── store.tsx
-```
-
-`src\state\user.types.tsx`:
-
-```jsx
-import { CMSPermissionData } from "../../config/types";
-
-// Define the object types used in the process of updating the state.
-export type USER_STATE = {
-    accID?: string,
-    username?: string,
-    accessToken?: string,
-    permission?: CMSPermissionData[];
-    currentEntityId?: string;
-}
-
-// Define the name of action types
-enum UserActionTypes {
-    SET_USER_INFO = 'SET_USER_INFO',
-    RESET_USER_STATE = 'RESET_USER_STATE'
-}
-
-export default UserActionTypes;
-
-// Define the action object structure (type + payload)
-interface SetUserInfoInterface {
-    type: UserActionTypes.SET_USER_INFO,
-    payload: USER_STATE
-}
-
-interface ResetUserInterface {
-    type: UserActionTypes.RESET_USER_STATE,
-}
-
-// Define the type of the action object, including all different structures
-export type UserAction = SetUserInfoInterface | ResetUserInterface;
-```
-
-
-`src\state\user\user.action.tsx`:
-
-```ts
-import { UserActionTypes, USER_STATE } from "./user.types";
-import { Dispatch } from "redux";
-
-// Return action object
-export const SetUserInfo = (value: USER_STATE) => {
-    return (dispatch: Dispatch<UserAction>) => {
-        dispatch({
-            type: UserActionTypes.SET_USER_INFO,
-            payload: value
-        })
-    }
-};
-
-export const ResetUserInfo = () => {
-    return (dispatch: Dispatch<UserAction>) => {
-        dispatch({
-            type: UserActionTypes.RESET_USER_STATE,
-        })
-    }
-}
-```
-
-`src\state\user\user.actionCreator.tsx`:
-
-```ts
-// Create a action creator
-import * as userActionCreator from './user.action';
-export default userActionCreator;
-```
-
-`src\state\user\user.reducer.tsx`:
-
-```js
-import { UserActionTypes, UserAction, USER_STATE } from "./user.types";
-
-// Create the initial state
-export const INITIAL_STATE: USER_STATE = {
-    accID: '',
-    username: '',
-    accessToken: '',
-    permission: null,
-    currentEntityId: ''
-}
-
-// Create a reducer to receive action object
-// Define how to update the state according to the action type
-const UserReducer = (state: USER_STATE = INITIAL_STATE, action: UserAction) => {
-    switch (action.type) {
-        case UserActionTypes.SET_USER_INFO:
-            return {
-                ...state,
-                ...action.payload,
-            }
-        case UserActionTypes.RESET_USER_STATE:
-            return INITIAL_STATE;
-        default:
-            return state;
-    }
-}
-
-export type UserReducerType = ReturnType<typeof UserReducer>;
-
-export default UserReducer;
-```
-
-`src\state\root-reducer.tsx`:
-
-```js
-import { combineReducers } from "redux";
-import ConfigReducer from "./config/config.reducer";
-import StateReducer from "./state/state.reducer";
-import MessageModalReducer from "./modal/modal.reducer";
-import UserReducer from "./user/user.reducer";
-
-// Combine all reducers created into a root reducer
-// Ensure no name of action types duplicate
-const reducers = combineReducers({
-    config: ConfigReducer,
-    state: StateReducer,
-    messageModal: MessageModalReducer,
-    user: UserReducer,    // From previous step
-});
-
-export type State = ReturnType<typeof reducers>;
-
-export default reducers;
-```
-
-`src\state\store.tsx`:
-
-```js
-import { createStore, applyMiddleware } from 'redux';
-import thunk from 'redux-thunk';
-import { persistStore, persistReducer } from 'redux-persist';
-import storage from 'redux-persist/lib/storage';
-import reducers from './root-reducer';  // From previous step
-
-// Use rootReducer to create store
-const persistConfig = {
-    key: 'cryptopayAdminPortal',
-    storage: storage,
-    whiteList: ['config','state', 'messageModal', 'user']
-};
-
-const persistedReducer = persistReducer<any, any>(persistConfig, reducers);
-
-export const store = createStore(
-    persistedReducer,
-    {},
-    applyMiddleware(thunk)
-);
-
-export const persistor = persistStore(store);
-```
-
-`src\index.tsx`:
-
-```js
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
-
-import { BrowserRouter } from 'react-router-dom';
-import { Provider } from 'react-redux';
-import { persistor, store } from './state/store';
-import { PersistGate } from 'redux-persist/integration/react';
-
-// Provide the store to React
-ReactDOM.render(
-  <React.StrictMode>
-    <Provider store={store}>  // Add this
-      <PersistGate loading={null} persistor={persistor}>  // Add this
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </PersistGate>
-    </Provider>
-  </React.StrictMode>,
-  document.getElementById('root')
-);
-```
-
-`src\pages\login.tsx`: Finally, use redux state in component UI.
-
-```ts
-import { bindActionCreators } from 'redux';
-import userActionCreator from '../state/user/user.actionCreator';
-import { useDispatch, useSelector } from 'react-redux';
-import { State } from '../state/root-reducer';
-
-const LoginPage = () => {
-    const dispatch = useDispatch();
-    
-    // Maybe you want to update the user state
-    // bindActionCreators is just a convenience method, noramlly need to use dispatch(SetUserInfo(...))
-    const { SetUserInfo } = bindActionCreators(userActionCreator, dispatch);
-
-    // Maybe you want to get the info in the user state
-    const userToken = useSelector((state: State) => state.user.accessToken);
-
-    const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        var data = await LoginCMSCognito(account.username, account.password, captchaSessionID, account.captcha)
-
-        if (data.status === 0) {
-            SetUserInfo({
-                accID: account.username,
-                username: account.username,
-                accessToken: data.accessToken,
-                permission: ,
-                currentEntityId: 
-            });
-        }
-        // ...
-    }
-
-    return (
-      // ...
-    )
-}
-
-export default LoginPage;
-```
-
-### Debug / Trace
-
-```jsx
-// For example, you want to know where does the `accessToken` be set
-const userToken = useSelector((state: State) => state.user.accessToken);
-```
-
-1. Trace to the reducer `user`.
-2. See which action type will update the property `accessToken`.
-3. Trace to the `action.tsx`, see which function return the action object.
-4. Trace the reference (call hierarchy) of this function.
-
-## Practice
-
-- [Style guide - Redux](https://redux.js.org/style-guide/)
-- [Hooks - React Redux](https://react-redux.js.org/api/hooks)
-
-In real practice, the Redux state can be used to:
-
-- Control the presence of a root component, such as
-  - a dialog,
-  - a loading animation,
-  - a selection list, and save different selected options for different selection categories.
-- Decide if a web socket connection is connected.
-
-## useSelector
-
-- [useSelector() - React Redux](https://react-redux.js.org/api/hooks#useselector)
-
-```jsx
-const ... = useSelector(selector_function);
-```
-
-`useSelector()` allows you to extract data from the Redux store state for use in this function component, using a *selector function*.
-
-A *selector function* is any function that accepts the entire Redux store state as the only argument, and returns some extracted or derived data.
-
-```jsx
-const accessToken = useSelector((state: State) => state.user.accessToken);
-```
-
-Note that:
-
-- `useSelector()` will run the *selector function* whenever the function component renders.
-- `useSelector()` will run the *selector function* whenever any action is dispatched to the store state.
-- Whenever the *selector* is run, `useSelector()` will do a reference comparison of the previous selector result value and the current result value. If they are different, the component will be forced to re-render. If they are the same, the component will not re-render.
-
-You may call `useSelector()` multiple times within a single function component. Each call to `useSelector()` creates an individual subscription to the Redux store. Because of the React update batching behavior used in React Redux v7, a dispatched action that causes multiple `useSelector()`s in the same component to return new values **should only result in a single re-render**.
-
-### Use Memoizing Selectors
-
-Consider the following `useSelector()`:
-
-```jsx
-const TodoPage = () => {
-  const completedTodos = useSelector((state) => state.todos.filter((todo) => todo.completed));
-  ...
-}
-```
-
-Whenever the Redux store state is updated (i.e. whenever any action is dispatched to the store state), `useSelector()` will run the *selector function*.
-
-| `state` Change | `todos` Change | Run selector func | Trigger Re-render |
-|----------------|----------------|-------------------|-------------------|
-| True           | False          | True              | False             |
-| True           | True           | True              | True              |
-
-If the *selector function* is quite expensive, we might want to memoize its result **unless the specific subset of the state that we care is updated**.
-
-To achieve this, we can use a *memoizing selector*, such as `createSelector()` from Reselect or Redux-toolkit. In this case, 
-
-```jsx
-import { createSelector } from "@reduxjs/toolkit";
-
-const selectCompletedTodos = createSelector(
-  (state) => state.todos,
-  (todos) => todos.filter((todo) => todo.completed),
-)
-
-const TodoPage = () => {
-  const completedTodos = useSelector(selectCompletedTodos);
-  
-  ...
-}
-```
-
-| `state` Change | `todos` Change | Run selector func | Trigger Re-render |
-|----------------|----------------|-------------------|-------------------|
-| True           | False          | **False**         | False             |
-| True           | True           | True              | True              |
-
-Note that *memoizing selectors* have internal state, and therefore they must not be recreated after re-rendering. **Ensure they are declared outside of the function component.**
-
-The *selector function* can depend on the props of the function component:
-
-```jsx
-import { createSelector } from "@reduxjs/toolkit";
-
-const selectCompletedTodos = createSelector(
-  (state) => state.todos,
-  (_, category) => category,
-  (todos, category) => todos.filter((todo) => todo.completed && todo.category === category),
-)
-
-const TodoPage = ({ category }) => {
-  const completedTodos = useSelector((state) => selectCompletedTodos(state, category));
-  
-  ...
-}
-```
-
-Note that *memoizing selectors* with props will only ever be used in a single instance of a single component because of the internal state. Therefore, components that will be created multiple times, such as items rendered in a list, cannot add props to the *memoizing selector*.
-
-### Without Re-render
-
-If you want to use a Redux state in a function component, without triggerring re-render:
-
-```jsx
-import { State } from "../../redux/root-reducer";
-import { store } from "../../redux/store";
-
-const xxxFunction = () => {
-  const state: State = store.getState();
-  const isOpen = state.selection.selection.isOpen;
-}
-```
 
 # Hooks
 
@@ -1382,9 +771,11 @@ const cachedFn = useCallback(fn, dependencies)
 useEffect(setupFunction, dependencies?)
 ```
 
-`useEffect` tells the component to do something after render. React will store the function you passed (i.e. *setup function*), and call it later after performing the DOM updates.
+`useEffect` tells the component to do something after render. React will store the *setup function* (i.e. the function you passed), and call it later after performing the DOM updates.
 
-`useEffect` calls the *setup function* after the first render of the component (mounting). By default, `useEffect` also calls the *setup function* after every re-render (updating). To optimize performance, you can customize when to skip calling the *setup function* if certain values have not changed after re-render. To do so, pass an array as an optional second argument to `useEffect`.
+`useEffect` calls the setup function after the first render of the component. By default, `useEffect` also calls the setup function after every re-render.
+
+To optimize performance, you can customize when to skip calling the setup function if certain values have not changed after re-render. To do so, pass an array as an optional second argument to `useEffect`.
 
 ```js
 export default function Counter() {
@@ -1408,6 +799,28 @@ export default function Counter() {
 }
 ```
 
+Your setup function may also optionally return a *cleanup function*.
+
+After every re-render with changed dependencies, React will first run the cleanup function with the old values of the dependencies, and then run your setup function with the new values. 
+
+After your component is removed from the DOM, React will also run your cleanup function.
+
+```js
+useEffect(() => {
+  const timer = setInterval(... , 500);
+
+  return () => clearInterval(timer);
+}, []);
+
+useEffect(() => {
+  const timeout = setTimeout(... , 500);
+
+  return () => clearTimeout(timeout);
+}, []);
+```
+
+
+
 Use cases:
 
 - Running once on mount: fetch API data
@@ -1419,7 +832,7 @@ Note that:
 - Function can also be in the dependency array.
 - For multiple `useEffect`, React will apply every effect used by the component, in the order they were specified. ([doc](https://legacy.reactjs.org/docs/hooks-effect.html#tip-use-multiple-effects-to-separate-concerns))
 
-### Using setState inside useEffect
+**Using setState inside useEffect**
 
 Generally speaking, using `setState` inside `useEffect` may create an infinite loop that most likely you don't want to cause. `useEffect` is called after each render and when `setState` is used inside of it, it will cause the component to re-render which will call `useEffect` and so on and so on.
 
@@ -1446,25 +859,7 @@ To avoid infinite chain, you can:
 - put properties of the `obj` in the dependency array: `useEffect(() => {...}, [obj.country])`
 - use `useMemo()` to create the `obj`: `const obj = useMemo(() => { return {country: 'Chile', city: 'Santiago'}}, [])`
 
-### Return a cleanup function
-
-```js
-useEffect(() => {
-  const timer = setInterval(... , 500);
-
-  return () => clearInterval(timer);
-}, []);
-
-useEffect(() => {
-  const timeout = setTimeout(... , 500);
-
-  return () => clearTimeout(timeout);
-}, []);
-```
-
-Your **setup function** may also optionally return a **cleanup function**. When your component is added to the DOM, React will run your setup function. After every re-render with changed dependencies, React will first run the **cleanup function** (if you provided it) with the old values of the dependencies, and then run your setup function with the new values. After your component is removed from the DOM, React will also run your **cleanup function**.
-
-### Using async inside useEffect
+**Using async inside useEffect**
 
 You cannot do this:
 
@@ -1612,8 +1007,6 @@ export const useHistoryQueryFilter = () => {
 
 # UI
 
-## General
-
 - Modal - A modal (also called a modal window or lightbox) is a web page element that **displays in front of and deactivates all other page content**. To return to the main content, the user must engage with the modal by completing an action or by closing it. Modals are often used to direct users’ attention to an important action or piece of information on a website or application.
 - You can mount anything (e.g. modal) to the DOM, but control it appear or not using `state` + `css` / `state` + `&&`. For example, if you click logout in the header bar, a confirmation window will pop up. Actually this modal is inserted into the parent component even it is not shown, but its css is `display: none` instead of `display:block`. This css behaviour is controlled by a `state`.
   ```jsx
@@ -1638,15 +1031,32 @@ export const useHistoryQueryFilter = () => {
 - You can use CSS variable in style: `color: var(--text-color);`
 - Icon: https://fontawesome.com/v4/
 
-## Style
+## Apply CSS Style
 
-Use `className` rather than `class` (plain HTML) if we want to apply the `CSS` classes in React.
-
-*The only reason is that the `class` is a reserved keyword in JavaScript and since we use JSX in React which itself is the extension of JavaScript, so we have to use `className` instead of `class` attribute. But nothing has changed with it, the semantic meaning of both `className` and `class` is the same, when JSX is rendered, the `className` attribute is automatically rendered as a `class` attribute.*
-
-You can also use inline style by passing a `style` property, like HTML. The `style` property can be a plain old JavaScript object. Use an empty object for conditional styling.
+**Inline Styles**
 
 The style names are written using camel casing, e.g. `backgroundColor` rather than `background-color`.
+
+```jsx
+export default function App() {
+  return (
+    <div
+      style={{
+        color: "white",
+        backgroundColor: "blue",
+      }}
+    >
+      Hello, Styled with Inline CSS!
+    </div>
+  );
+}
+```
+
+✅ Pros: Scoped to the component, no external CSS file needed.
+
+❌ Cons: Not reusable, lacks pseudo-classes like `:hover`.
+
+Use an empty object for conditional styling.
 
 ```jsx
 const divStyle = {
@@ -1662,27 +1072,224 @@ const divStyle = {
 React will automatically append a “px” suffix to certain numeric inline style properties. If you want to use units other than “px”, specify the value as a string with the desired unit. For example:
 
 ```jsx
-// Result style: '10px'
-<div style={{ height: 10 }}>
-  Hello World!
-</div>
-
-// Result style: '10%'
-<div style={{ height: '10%' }}>
-  Hello World!
-</div>
+<td className="text-center" style={{width: '8rem'}} />
 ```
 
-## CSS
+**External CSS File (Global Styles)**
 
-- The children in element `<div>` are vertically aligned. To make them horizontally, use `<div style={{display: "flex"}}>`
-- `padding: 1rem 2rem` includes `padding-top: 1rem`, `padding-bottom: 1rem` and `padding-left: 2rem`, `padding-right: 2rem`
-- CSS length unit
-  - Use `px` if need hardcode
-  - Use `em / rem` if based on font size
-    - `1 em / rem = 1 font size`, default font size = 16px
-    - `rem` inherit HTML root size, `em` inherit parent element size
-  - Use `vh / vw` if need responsive design (view height / view width)
+Place your global style in `styles/global.css` (or `app/globals.css` for Next.js).
+
+```css
+/* CSS Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Global Styles */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f9f9f9;
+  color: #333;
+}
+```
+
+Import it in `App.tsx` (or `app/layout.tsx` for Next.js).
+
+```jsx
+import "./globals.css";
+
+...
+```
+
+✅ Pros: Suitable for resets, typography, and common UI elements.
+
+**External CSS File (Component Specific Styles)**
+
+`components/Button.module.css`
+
+```css
+.button {
+  background-color: blue;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+}
+```
+
+`components/Button.tsx`
+
+```jsx
+import styles from "./Button.module.css";
+
+export default function Button({ text }) {
+  return <button className={styles.button}>{text}</button>;
+}
+```
+✅ Pros: Keeps styles separate, reusable.
+
+❌ Cons: Can cause class name conflicts.
+
+**Tailwind CSS**
+
+If using Tailwind, you apply classes directly:
+
+```jsx
+export default function App() {
+  return <div className="text-white bg-blue-500">Hello, Styled with Tailwind!</div>;
+}
+```
+
+✅ Pros: No need to write custom CSS, fast styling.
+
+**Note**
+
+Use `className` rather than `class` (plain HTML) if we want to apply the `CSS` classes in React.
+
+## Where to Store Images
+
+Common ways to store images:
+
+- `assets` folder – Importing images in components.
+- `public` folder – Direct file referencing.
+- External URLs – Hosting images on CDNs or cloud storage.
+- Base64 encoding – Embedding images directly into your code.
+
+**Store in `assets` Folder**
+
+```
+/src
+  ├── assets/
+      ├── icons/
+      │   ├── search.svg
+      │   ├── cart.svg
+      ├── banners/
+          ├── homepage.jpg
+          ├── sale-banner.png
+```
+
+```jsx
+import React from 'react';
+import logo from './assets/logo.png';
+
+const Header: React.FC = () => {
+  return (
+    <header>
+      <img src={logo} alt="Logo" />
+    </header>
+  );
+};
+
+export default Header;
+```
+
+Pros:
+
+- Webpack handles image optimization and bundling automatically, which can lead to better performance and smaller bundle sizes.
+
+Cons:
+
+- Large numbers of images can bloat the bundle size, affecting the initial load time.
+
+When to use:
+
+- Best suited for images that are part of the UI component (e.g., logos, icons).
+
+**Store in `public` Folder**
+
+```
+/public
+  ├── images/
+      ├── logo.png
+      ├── background.jpg
+      ├── avatars/
+          ├── user1.png
+          ├── user2.png
+```
+
+```jsx
+<img src="/images/logo.png" alt="Logo" />
+```
+
+Pros:
+
+- Images are accessible by direct URL, making it ideal for serving static assets.
+- Bypasses Webpack bundling, so large files won't bloat your JavaScript bundles.
+
+Cons:
+
+- Webpack doesn’t optimize these images. You'll need to handle image compression and caching strategies separately.
+- Public assets are typically cached by the browser, so updates to images might not reflect immediately without proper cache busting.
+
+When to use:
+
+- Best for images that are not part of your React component lifecycle (e.g., large background images, favicons, and static assets).
+
+**Using External URLs**
+
+Hosting images on an external server, CDN, or cloud storage like AWS S3 or Cloudflare is another effective strategy. This decouples image storage from your application code, offering more flexibility.
+
+```jsx
+const Profile: React.FC = () => {
+  return (
+    <div>
+      <img src="https://cdn.example.com/profiles/user123.jpg" alt="User Profile" />
+    </div>
+  );
+};
+
+export default Profile;
+```
+
+Pros:
+
+- CDNs (Content Delivery Networks) optimize image delivery by caching files closer to the user.
+- You don’t need to worry about local storage limits or performance degradation as the number of images grows.
+
+Cons:
+
+- Managing multiple external resources can introduce complexity in terms of integration, permissions, and monitoring.
+
+When to use:
+
+- Best for large-scale applications where performance and scalability are critical, and when you have a lot of media assets.
+
+## SVG Images
+
+- Find a SVG file here: https://www.svgrepo.com/
+- Transform a SVG file to React component: https://react-svgr.com/playground/?icon=true&typescript=true
+
+Example of a reuseable SVG component:
+
+```jsx
+import * as React from "react";
+import { SVGProps } from "react";
+const HamburgerMenu = (props: SVGProps<SVGSVGElement>) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="2em"
+    height="2em"
+    fill="none"
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <path
+      stroke={props.color || "currentColor"}
+      strokeLinecap="round"
+      strokeWidth={1.5}
+      d="M20 7H4M20 12H4M20 17H4"
+    />
+  </svg>
+);
+export default HamburgerMenu;
+```
+
+You can apply it with different colors and dimensions.
+
+```jsx
+<HamburgerMenu color="green" height="2em" width="2em" />
+```
 
 # Form
 
@@ -1797,107 +1404,6 @@ REACT_APP_SERVER_URL="https://algotrader.m-finance.net:5000"
 ```
 - Note that, after `npm run build`, the environment variables will be bundled into the `.js` file. If you need to set the environment variables outside the `.js` file, consider putting the config file in the `/public`. (https://stackoverflow.com/questions/50369477/create-react-app-configuration-file-after-build-app)
 
-## Add image
-```jsx
-import EmpLoginLogo from '../assets/logo_login.png';
-
-return (
-  <img src={EmpLoginLogo} alt='EmpLoginLogo' className="img-logo" />
-
-  // convert base64 string to image, e.g. captcha
-  <img src={`data:image/jpeg;base64,'/9j/4AAQSkZJRgABAgAAAQABAAD/2wBDAAgGB...'`} />
-)
-```
-
-## Add select dropdown list
-`npm i --save react-select`
-```jsx
-import React from 'react'
-import Select from 'react-select'
-
-type stype = {label: string, value: string};
-
-const options = [
-  { value: 'chocolate', label: 'Chocolate' },
-  { value: 'strawberry', label: 'Strawberry' },
-  { value: 'vanilla', label: 'Vanilla' }
-]
-  
-const list = ['apple', 'banana'];
-
-const onChangeEntitySelectList = (option: stype | null) => {
-    if (option) {
-        console.log(option.label);
-    }
-}
-
-const MyComponent = () => (
-  <Select options={options} placeholder={entityId} isSearchable={false} onChange={onChangeEntitySelectList}/>
-  <Select options={list.map(t => ({value: t, label: t}))} />
-)
-```
-- doc: https://react-select.com/home
-
-`<Form.Select>`
-
-## Add toast
-`npm i react-hot-toast`
-- doc: https://react-hot-toast.com/
-
-## Add style
-```js
-<td className="text-center" style={{width: '8rem'}} />
-
-<td style={showPasswordValidation === null ? {} : {paddingRight: '1.5rem'}} />
-```
-
-## Render list
-- ref: https://react.dev/learn/rendering-lists#rules-of-keys
-- Arrays: If you have a fixed number of form elements or if the elements have a sequential order, you can use an array to represent the form.
-- Maps: If you have a dynamic set of form elements or if the elements have unique identifiers, you can use a map to represent the form.
-```jsx
-// Primitive type arrays
-const [names, setNames] = useState<string[]>([]);
-
-const handleChange = (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
-  const updatedNames = [...names];
-  updatedNames[index] = event.target.value;
-  setNames(updatedNames);
-};
-
-const handleSubmit = (event) => {
-  event.preventDefault();
-  // Submit the form data
-};
-
-return (
-  <form onSubmit={handleSubmit}>
-    {names
-      .filter((name) => name !== "Peter")
-      .map((name, index) => (
-        <input
-          key={index}
-          type="text"
-          value={name}
-          onChange={(event) => handleChange(event, index)}
-        />
-      ))}
-    <button type="submit">Submit</button>
-  </form>
-);
-```
-
-## Input Validation Message
-
-```jsx
-const [passwordError, setPasswordError] = useState<{ isShow: boolean; message: string }>({
-  isShow: false,
-  message: "",
-});
-
-setPasswordError({ isShow: false, message: "" });
-```
-
 ## Inactive timeout
 
 ```jsx
@@ -1957,6 +1463,7 @@ export default InactiveTimeout;
 - the callback method of `addEventListener` and `removeEventListener` should be the same, therefore you need to declare a method explicitly (cannot use anonymous method)
 
 # UI Library
+
 ## Prime React
 ```
 npm install primereact

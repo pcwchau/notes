@@ -3,6 +3,7 @@
 - [Index](#index)
 - [To Explore](#to-explore)
 - [Tools](#tools)
+  - [Remote Tools](#remote-tools)
   - [Develop tools](#develop-tools)
   - [Management tools](#management-tools)
   - [Visual Studio](#visual-studio)
@@ -29,6 +30,10 @@
 - how to do auth? token / session + cookie
 
 # Tools
+
+## Remote Tools
+
+- Anydesk
 
 ## Develop tools
 
@@ -88,7 +93,7 @@ Preference (user setting):
 - Enable multiple lines of tabs
   - `workbench.editor.showTabs` -> multiple, then enable `workbench.editor.wrapTabs`
 
-Extensions: 
+Extensions:
 
 - `GitLens` - see git commit/author for each line
 - `Indent one space` - can use space to indent
@@ -98,7 +103,8 @@ Extensions:
 - `Markdown Preview Github Styling` - for markdown preview style
 - `React Hooks Snippets` - add snippets for hooks like `useState` and `useEffect`
 - `Copy Json Path` - very useful for language file in react
-- `ESLint` - syntax / potential runtime error checking for JS, JSX, TS and TSX.
+- `ESLint` - syntax / potential runtime error checking for JS, JSX, TS and TSX. You need to install eslint package through NPM first.
+- `Tailwind CSS IntelliSense`
 - `Prettier - Code Formatter` - apply formatting to JS, JSX, TS and TSX.
   - You can set the config for each project in `package.json` or `config.file`. (when working with JS/TS, better use tab size = 2)
   ```json

@@ -8,7 +8,7 @@
     - [Basic Program](#basic-program)
     - [Multiple Folders Program](#multiple-folders-program)
     - [Multiple Programs in a Module](#multiple-programs-in-a-module)
-- [Variables and Constants](#variables-and-constants)
+- [Variables](#variables)
   - [Declaration and Initialization](#declaration-and-initialization)
   - [Data Types](#data-types)
     - [Basic Types](#basic-types)
@@ -17,6 +17,10 @@
   - [Pointers](#pointers)
 - [Control Flows](#control-flows)
   - [If/else](#ifelse)
+  - [Switch](#switch)
+  - [For](#for)
+  - [Defer](#defer)
+  - [Panic](#panic)
 
 # Overview
 
@@ -106,9 +110,11 @@ To organize a Go project, we can group the code into *packages*, and group *pack
 
 ## Executable Programs
 
-An executable program is created by linking a single, unimported package called the *main package* with all the packages it imports, transitively.
+An executable program is created by linking the *main package* with all the packages it imports, transitively. Programs start running in the main package.
 
-Programs start running in the *main package*, which must have package name `main` and declare a `main()` function that takes no arguments and returns no value. We can only have one `main()` function across the `package main`.
+- The main package must have package name `main`.
+- The main package must declare **one and only one** `main()` function that takes no arguments and returns no value.
+- The main package must be unimported.
 
 ```go
 package main
@@ -230,7 +236,7 @@ go install example/greetings/cmd/client
 go install example/greetings/cmd/worker
 ```
 
-# Variables and Constants
+# Variables
 
 ## Declaration and Initialization
 
@@ -411,7 +417,7 @@ func add(x, y int) int {
 }
 ```
 
-A function can return any number of results. When a function returns multiple results, you must use multiple variables to store them, otherwise it won't compile.
+A function can return any number of values. When a function returns multiple values, you must use multiple variables to store them, otherwise it won't compile.
 
 ```go
 func swap(x string, y string) (string, string) {
@@ -490,26 +496,201 @@ Unlike C, Go has no pointer arithmetic.
 
 ## If/else
 
-Go's `if` statements need not be surrounded by parentheses `( )` but the braces `{ }` are required.
+Syntax:
+
+- The condition doesn't require parentheses `( )`.
+- The condition may be preceded by a simple statement, which executes before the condition is evaluated. Variables declared by this statement are only in scope in all `if` branches.
 
 ```go
+func givemeanumber() int {
+    return -1
+}
+
 func main() {
-    x := 27
-    if x%2 == 0 {
-        fmt.Println(x, "is even")
+    if num := givemeanumber(); num < 0 {
+        fmt.Println(num, "is negative")
+    } else if num < 10 {
+        fmt.Println(num, "has only one digit")
+    } else {
+        fmt.Println(num, "has multiple digits")
     }
 }
 ```
 
-The `if` statement can start with a short statement to execute before the condition.
+## Switch
 
-Variables declared by the statement are only in scope until the end of the `if`.
+Syntax:
+
+- The condition doesn't require parentheses `( )`.
+- You can invoke a function after the condition.
+- A `case` statement can include more than one case.
 
 ```go
-func pow(x, n, lim float64) float64 {
-	if v := math.Pow(x, n); v < lim {
-		return v
+func main() {
+    // weekday := time.Now().Weekday().String()
+	// switch weekday {
+	switch time.Now().Weekday().String() {
+	case "Monday", "Tuesday", "Wednesday", "Thursday", "Friday":
+		fmt.Println("It's time to learn some Go.")
+	default:
+		fmt.Println("It's the weekend, time to rest!")
 	}
-	return lim
 }
 ```
+
+In some programming languages, you write a `break` keyword at the end of every `case` statement. But in Go, when the logic falls into one case, it will not continue to the next case, unless you use the `fallthrough` keyword.
+
+```go
+func main() {
+    switch num := 15; {
+    case num < 50:
+        fmt.Printf("%d is less than 50\n", num)
+        fallthrough
+    case num > 100:
+        fmt.Printf("%d is greater than 100\n", num)
+        fallthrough
+    case num < 200:
+        fmt.Printf("%d is less than 200", num)
+    }
+}
+
+// Result:
+// 15 is less than 50
+// 15 is greater than 100
+// 15 is less than 200
+```
+
+## For
+
+Syntax:
+
+- The expression doesn't require parentheses `( )`.
+- Semicolons `;` separate the three components of for loops:
+  - An initial statement that's executed before the first iteration (optional).
+  - A condition expression that's evaluated before every iteration. The loop stops when this condition is `false`.
+  - A poststatement that's executed at the end of every iteration (optional).
+- You can use `break` keyword to exit the loop.
+- You can use `continue` keyword to skip the current iteration of a loop.
+
+```go
+func main() {
+    sum := 0
+    for i := 1; i <= 100; i++ {
+        sum += i
+    }
+    fmt.Println("sum of 1..100 is", sum)
+}
+```
+
+Go has no `while` keyword, but you can use a `for` loop instead:
+
+```go
+func main() {
+    var num int64
+    rand.Seed(time.Now().Unix())
+    for num != 5 {
+        num = rand.Int63n(15)
+        fmt.Println(num)
+    }
+}
+```
+
+You can also write a infinite loop with `break` keyword:
+
+```go
+func main() {
+    for {
+        ...
+        break
+    }
+}
+```
+
+## Defer
+
+A `defer` statement pushes a function call onto a list. The list of saved calls is executed **after the surrounding function returns**.
+
+A deferred function's arguments are evaluated when the `defer` statement is evaluated.
+
+```go
+func a() {
+    i := 0
+    defer fmt.Println(i)
+    i++
+    return
+}
+
+// Result:
+// 0
+```
+
+Deferred function calls are executed in *Last In First Out order* after the surrounding function returns.
+
+```go
+func b() {
+    for i := 0; i < 4; i++ {
+        defer fmt.Print(i)
+    }
+}
+
+// Result:
+// 3210
+```
+
+Deferred functions execute after the surrounding function returns:
+
+```go
+func main() {
+	fmt.Print(c())
+}
+
+func c() int {
+	i := 0
+	defer func() { i = 2 }()
+	return i
+}
+
+// Result:
+// 0
+```
+
+However, deferred functions may read and assign to the returning function's named return values.
+
+```go
+func main() {
+	fmt.Print(c())
+}
+
+func c() (i int) {
+	i = 1
+	defer func() { i = 2 }()
+	return i
+}
+
+// Result:
+// 2
+```
+
+A typical use case of `defer` is to perform various clean-up actions.
+
+```go
+func CopyFile(dstName, srcName string) (written int64, err error) {
+    src, err := os.Open(srcName)
+    if err != nil {
+        return
+    }
+    defer src.Close()
+
+    dst, err := os.Create(dstName)
+    if err != nil {
+        return
+    }
+    defer dst.Close()
+
+    return io.Copy(dst, src)
+}
+```
+
+## Panic
+
+Runtime errors make a Go program panic (crash), such as attempting to access an array by using an out-of-bounds index or dereferencing a nil pointer. You can also force a program to panic.
